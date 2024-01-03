@@ -1,0 +1,23 @@
+{
+  "name": "link-checker",
+  "version": "0.0.1",
+  "description": "Scan sites for broken links.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unisdr/link-checker.git"
+  },
+  "author": "Ken Hawkins",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/unisdr/link-checker/issues"
+  },
+  "homepage": "https://github.com/unisdr/link-checker#readme",
+  "dependencies": {
+    "broken-link-checker": "^0.7.8"
+  }
+}
