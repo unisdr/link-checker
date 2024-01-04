@@ -1,24 +1,55 @@
 # link-checker
 
+## Overview
+
+`link-checker` uses [broken-link-checker](https://github.com/stevenvachon/broken-link-checker) to identify any broken links on UNDRR projects.
+
+It is currently limited to only UNDRR.org and will take a long time to run
+
 ## Usage
 
-- `npm install`
-- To avoid 429 throttling, set user/pass in index.js
-- `npm start`
+### Installation
+
+To get started, install the necessary dependencies using npm:
+
+```bash
+npm install
+```
+
+### Configuration
+
+To prevent 429 throttling issues, it's recommended to set your username and password in the `index.js` file.
+
+```javascript
+// index.js
+const options = {
+  // Set your authentication credentials to avoid 429 throttling
+  auth: {
+    user: 'your_username',
+    pass: 'your_password',
+  },
+  // Additional configurations...
+};
+```
+
+### Execution
+
+Run the link checker using the following command:
+
+```bash
+npm start
+```
 
 ## Background
 
-- Uses https://github.com/stevenvachon/broken-link-checker
-- For https://gitlab.com/undrr/web-backlog/-/issues/1461
+This project utilizes the [broken-link-checker](https://github.com/stevenvachon/broken-link-checker) library to perform link checks. It was created to address the requirements outlined in [this GitLab issue](https://gitlab.com/undrr/web-backlog/-/issues/1461).
 
-## Future plans
+## Future Plans
 
-Leverage github action like:
+In future releases, the project aims to integrate seamlessly with GitHub Actions, streamlining the link-checking process as part of continuous integration. Two potential options are being explored for this purpose:
 
-- https://github.com/marketplace/actions/broken-link-checker-action
-- https://github.com/marketplace/actions/broken-link-check
+1. [broken-link-checker-action](https://github.com/marketplace/actions/broken-link-checker-action): A GitHub Action specifically designed for checking broken links.
 
-Alternative options:
+2. [broken-link-check](https://github.com/marketplace/actions/broken-link-check): Another GitHub Action tailored for identifying broken links in a repository.
 
-- Use https://github.com/JustinBeckwith/linkinator
-    - https://github.com/JustinBeckwith/linkinator#github-actions
+Alternatively, the project is considering the use of [linkinator](https://github.com/JustinBeckwith/linkinator), a versatile link-checking tool. The [GitHub Actions integration](https://github.com/JustinBeckwith/linkinator#github-actions) for linkinator provides an alternative approach to address broken link issues within a GitHub repository.
