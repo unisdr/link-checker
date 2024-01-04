@@ -1,4 +1,24 @@
 const {SiteChecker} = require('broken-link-checker');
+const fs = require('node:fs');
+var util = require('node:util');
+
+console.log(`Running, this may take some time. You will only see output for errors.`);
+console.log(`Output is also save to logs/link-checker-timestamp.csv`);
+console.log(`----`);
+console.log(`Begin CSV readout...`);
+
+var log_file = fs.createWriteStream(__dirname + '/logs/link-checker-'+Math.floor(Date.now() / 1000)+'.csv', {flags : 'w'});
+var log_stdout = process.stdout;
+
+console.log = function(d) { //
+  log_file.write(util.format(d) + '\n');
+  log_stdout.write(util.format(d) + '\n');
+};
+
+// add a header to the csv
+let csvHeader = "Tested URL, Page, Status message, Status code,";
+console.log(csvHeader);
+
 // var { HtmlUrlChecker } = require("broken-link-checker");
 var brokenUrlList = [];
 
@@ -7,8 +27,6 @@ const defaultBaseUrlList = [
   // "https://www.undrr.org/about-undrr/work-us", // ERRNO_EPROTO example
   "https://user:pass@www.undrr.org/",
 ]
-
-console.log(`Running, this may take some time. You will only see output for errors.`);
 
 async function main() {
   async function urlChecker(url) {
@@ -88,14 +106,6 @@ async function main() {
     await new Promise(resolve => {
       if (brokenUrlList.length > 0) {
         console.log(`${brokenUrlList.length} errors found.`);
-        // brokenUrlList.forEach(url => {
-        //   let message = "\nurl is: " + url.url + "\n"
-        //     + "html base url is: " + url.htmlBaseUrl + "\n"
-        //     + "status message is: " + url.statusMessage + "\n"
-        //     + "status is: " + url.status + "\n";
-
-        //   console.log(message);
-        // });
       }
       else {
         console.log("\nJob Completed.. There is no broken links!!")
