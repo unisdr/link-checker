@@ -13,10 +13,9 @@ const formattedDate = currentDate.toLocaleString('en-GB', {
   literal: '-'
 }).replace(/\:/g, '-').replace(/\, /g, '-').replace(/\//g, '-');
 
-console.log(`Running, this may take some time. You will only see output for errors.`);
-console.log(`Output is also save to logs/link-checker-timestamp.csv`);
+console.log(`Running, this may take some time.`);
+console.log(`Output is also saved to ./logs/link-checker-timestamp.csv`);
 console.log(`----`);
-console.log(`Begin CSV readout...`);
 
 var log_file = fs.createWriteStream(__dirname + '/logs/link-checker-' + formattedDate + '.csv', { flags: 'w' });
 var log_stdout = process.stdout;
@@ -63,6 +62,7 @@ async function main() {
           // excludedKeywords: ['*linkedin*'],
           filterLevel: 0, // links only
           maxSocketsPerHost: 10,
+          cacheMaxAge: 1,
           acceptedSchemes: ["http", "https"],
           requestMethod: "get",
           retryHeadCodes: [405,503]
