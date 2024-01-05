@@ -4,12 +4,21 @@ const util = require('node:util');
 const colors = require('colors');
 colors.enable();
 
+// Get the current date
+const currentDate = new Date();
+
+// Format the date as YYYY-MM-DD
+const formattedDate = currentDate.toLocaleString('en-GB', {
+  timeZone: 'UTC',
+  literal: '-'
+}).replace(/\:/g, '-').replace(/\, /g, '-').replace(/\//g, '-');
+
 console.log(`Running, this may take some time. You will only see output for errors.`);
 console.log(`Output is also save to logs/link-checker-timestamp.csv`);
 console.log(`----`);
 console.log(`Begin CSV readout...`);
 
-var log_file = fs.createWriteStream(__dirname + '/logs/link-checker-'+Math.floor(Date.now() / 1000)+'.csv', {flags : 'w'});
+var log_file = fs.createWriteStream(__dirname + '/logs/link-checker-' + formattedDate + '.csv', { flags: 'w' });
 var log_stdout = process.stdout;
 
 console.csv = function(d) { //
@@ -55,7 +64,8 @@ async function main() {
           filterLevel: 0, // links only
           maxSocketsPerHost: 10,
           acceptedSchemes: ["http", "https"],
-          requestMethod: "get"
+          requestMethod: "get",
+          retryHeadCodes: [405,503]
         },
         {
           "error": (error) => {
@@ -72,7 +82,7 @@ async function main() {
               let link = `${result.http.response.statusCode} from ${result.base.original} => ${result.url.resolved}`;
 
               if (result.broken) {
-                if (result.http.response && ![undefined, 400, 429, 999, 200].includes(result.http.response.statusCode)) {
+                if (result.http.response && ![undefined, 400, 429, 999, 200, "ERRNO_EPROTO"].includes(result.http.response.statusCode)) {
                   console.log("broken".red, link);
                   
                   var urlCrawlResult = new Object();
