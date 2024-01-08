@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Scan sites for broken links.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,7 +19,6 @@
   },
   "homepage": "https://github.com/unisdr/link-checker#readme",
   "dependencies": {
-    "broken-link-checker": "https://github.com/khawkins98/broken-link-checker/archive/refs/tags/v0.0.2.tar.gz",
-    "colors": "^1.4.0"
+    "linkinator": "^6.0.3"
   }
 }

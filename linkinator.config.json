@@ -1,0 +1,20 @@
+{
+  "path": "www.undrr.org",
+  "concurrency": 100,
+  "config": "string",
+  "recurse": true,
+  "skip": "www.googleapis.com",
+  "format": "json",
+  "silent": true,
+  "verbosity": "error",
+  "timeout": 0,
+  "markdown": true,
+  "XserverRoot": "./",
+  "directoryListing": true,
+  "retry": true,
+  "retryErrors": true,
+  "retryErrorsCount": 3,
+  "retryErrorsJitter": 5,
+  "urlRewriteSearch": "/pattern/",
+  "urlRewriteReplace": "replacement"
+}

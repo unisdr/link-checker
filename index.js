@@ -1,158 +1,50 @@
-const {SiteChecker} = require('broken-link-checker');
-const fs = require('node:fs');
-const util = require('node:util');
-const colors = require('colors');
-colors.enable();
+import { LinkChecker, LinkState, getConfig } from 'linkinator';
 
-// Get the current date
-const currentDate = new Date();
+async function complex() {
+  // create a new `LinkChecker` that we'll use to run the scan.
+  const checker = new LinkChecker();
 
-// Format the date as YYYY-MM-DD
-const formattedDate = currentDate.toLocaleString('en-GB', {
-  timeZone: 'UTC',
-  literal: '-'
-}).replace(/\:/g, '-').replace(/\, /g, '-').replace(/\//g, '-');
+  // Respond to the beginning of a new page being scanned
+  checker.on('pagestart', url => {
+    console.log(`Scanning ${url}`);
+  });
 
-console.log(`Running, this may take some time.`);
-console.log(`Output is also saved to ./logs/link-checker-timestamp.csv`);
-console.log(`----`);
+  // After a page is scanned, check out the results!
+  checker.on('link', result => {
 
-var log_file = fs.createWriteStream(__dirname + '/logs/link-checker-' + formattedDate + '.csv', { flags: 'w' });
-var log_stdout = process.stdout;
+    // check the specific url that was scanned
+    console.log(`  ${result.url}`);
 
-console.csv = function(d) { //
-  log_file.write(util.format(d) + '\n');
-  log_stdout.write(util.format(d) + '\n');
-};
+    // How did the scan go?  Potential states are `BROKEN`, `OK`, and `SKIPPED`
+    console.log(`  ${result.state}`);
 
-const options = {
-  // Set your authentication credentials to avoid throttling
-  auth: {
-    // user: 'your_username',
-    // pass: 'your_password',
-  },
-  // not https prefix!
-  url: [
-    "www.undrr.org/implementing-sendai-framework/catalyze-investment-in-resilience",
-    "www.preventionweb.net/understanding-disaster-risk"
-  ]
-  // Additional configurations...
-};
+    // What was the status code of the response?
+    console.log(`  ${result.status}`);
 
+    // What page linked here?
+    console.log(`  ${result.parent}`);
+  });
 
-// add a header to the csv
-let csvHeader = "Tested URL, Page, Status message, Status code,";
-console.csv(csvHeader);
+  // Go ahead and start the scan! As events occur, we will see them above.
+  const result = await checker.check({
+    path: 'http://example.com',
+    // port: 8673,
+    // recurse: true,
+    // linksToSkip: [
+    //   'https://jbeckwith.com/some/link',
+    //   'http://example.com'
+    // ]
+  });
 
-// var { HtmlUrlChecker } = require("broken-link-checker");
-var brokenUrlList = [];
+  // Check to see if the scan passed!
+  console.log(result.passed ? 'PASSED :D' : 'FAILED :(');
 
-// Use the options object to set authentication in the defaultBaseUrlList
-const defaultBaseUrlList = options.url.map(url => `https://${url}`);
-console.log(defaultBaseUrlList)
-// const defaultBaseUrlList = options.url.map(url => `https://${options.auth.user}:${options.auth.pass}@${url}`);
+  // How many links did we scan?
+  console.log(`Scanned total of ${result.links.length} links!`);
 
-async function main() {
-  async function urlChecker(url) {
-    await new Promise(resolve => {
-
-      const siteChecker  = new SiteChecker (
-        // https://github.com/stevenvachon/broken-link-checker#options
-        {
-          excludeInternalLinks: false,
-          excludeExternalLinks: false,
-          // excludedKeywords: ['*linkedin*'],
-          filterLevel: 0, // links only
-          maxSocketsPerHost: 20,
-          cacheMaxAge: 1,
-          customHeaders: { "your-header": "secret" },
-          acceptedSchemes: ["http", "https"],
-          // requestMethod: "get",
-          retryHeadCodes: [405,503],
-          // excludedKeywords: ["understanding-disaster-risk", "/community/", "/drr-glossary", "/knowledge-base", "/upload-your", "/sendai-framework/", "/publication/", "/news/", "/event", "community-voices/", "/blog-type/", "/news-type/", "/community/", "/collections/", "/blog/", "/vacancy/"],
-          includedKeywords: ["www.preventionweb.net/understanding-disaster-risk/terminology/hips/*"],
-        },
-        {
-          "error": (error) => {
-            console.error(error);
-          },
-          "link": (result) => {
-            try {
-              if (result.http.response == null) {
-                result.http.response = {};
-                result.http.response.statusCode = "ERRNO_EPROTO";
-                // console.log('Caught ' + result.http.response.statusCode + " from " + result.base.original)
-              }
-              
-              let link = `${result.http.response.statusCode} from ${result.base.original} => ${result.url.resolved}`;
-
-              if (result.broken) {
-                if (result.http.response && ![undefined, 400, 429, 999, 200, "ERRNO_EPROTO"].includes(result.http.response.statusCode)) {
-                  console.log("broken".red, link);
-                  
-                  var urlCrawlResult = new Object();
-                  urlCrawlResult.status = result.http.response.statusCode;
-                  urlCrawlResult.url = result.url.resolved;
-                  urlCrawlResult.htmlBaseUrl = result.base.original;
-                  urlCrawlResult.statusMessage = result.http.response.statusMessage;
-
-                  brokenUrlList.push(urlCrawlResult);
-
-                  let message = urlCrawlResult.url + ", " + urlCrawlResult.htmlBaseUrl + ", " + urlCrawlResult.statusMessage + ", "+ urlCrawlResult.status + ", ";
-                  console.csv(message);
-                }
-              } else {
-                console.log("checked".green, link);
-              }
-            } catch (error) {
-              console.log(result)
-              console.log(error)
-              console.log("error encountered, stopping checking ..");
-              resolve();
-            }
-
-          },
-          "end": () => {
-            console.log("base url check completed..");
-            resolve();
-          }
-        }
-      );
-
-      try {
-        siteChecker.enqueue(url);
-
-      } catch (error) {
-        console.log(error)
-      }
-
-    });
-  }
-
-  async function checkAndGetResults() {
-
-    for (let baseUrl of defaultBaseUrlList) {
-      await urlChecker(baseUrl);
-    }
-
-    await new Promise(resolve => {
-      if (brokenUrlList.length > 0) {
-        console.log(`${brokenUrlList.length} errors found.`);
-      }
-      else {
-        console.log("\nJob Completed.. There is no broken links!!")
-      }
-
-      resolve();
-    });
-  }
-
-  async function executeJob() {
-    await checkAndGetResults();
-    process.exit(0);
-  };
-
-  executeJob();
+  // The final result will contain the list of checked links, and the pass/fail
+  const brokeLinksCount = result.links.filter(x => x.state === 'BROKEN');
+  console.log(`Detected ${brokeLinksCount.length} broken links.`);
 }
 
-main(...process.argv.slice(2));
+complex();
