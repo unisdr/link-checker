@@ -27,9 +27,16 @@ async function complex() {
 
   // Go ahead and start the scan! As events occur, we will see them above.
   const result = await checker.check({
-    path: 'http://example.com',
+    // path: 'https://www.preventionweb.net/understanding-disaster-risk/terminology/hips',
+    path: 'https://allaboutken.com',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36',
+    },
     // port: 8673,
-    // recurse: true,
+    "concurrency": 100,
+    verbosity: "none",
+    format: "csv",
+    recurse: true,
     // linksToSkip: [
     //   'https://jbeckwith.com/some/link',
     //   'http://example.com'
