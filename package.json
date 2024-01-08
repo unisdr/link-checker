@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/unisdr/link-checker#readme",
   "dependencies": {
-    "broken-link-checker": "^0.7.8",
+    "broken-link-checker": "https://github.com/khawkins98/broken-link-checker/archive/refs/tags/v0.0.2.tar.gz",
     "colors": "^1.4.0"
   }
 }

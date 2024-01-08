@@ -48,7 +48,9 @@ console.csv(csvHeader);
 var brokenUrlList = [];
 
 // Use the options object to set authentication in the defaultBaseUrlList
-const defaultBaseUrlList = options.url.map(url => `https://${options.auth.user}:${options.auth.pass}@${url}`);
+const defaultBaseUrlList = options.url.map(url => `https://${url}`);
+console.log(defaultBaseUrlList)
+// const defaultBaseUrlList = options.url.map(url => `https://${options.auth.user}:${options.auth.pass}@${url}`);
 
 async function main() {
   async function urlChecker(url) {
@@ -61,11 +63,14 @@ async function main() {
           excludeExternalLinks: false,
           // excludedKeywords: ['*linkedin*'],
           filterLevel: 0, // links only
-          maxSocketsPerHost: 10,
+          maxSocketsPerHost: 20,
           cacheMaxAge: 1,
+          customHeaders: { "your-header": "secret" },
           acceptedSchemes: ["http", "https"],
-          requestMethod: "get",
-          retryHeadCodes: [405,503]
+          // requestMethod: "get",
+          retryHeadCodes: [405,503],
+          // excludedKeywords: ["understanding-disaster-risk", "/community/", "/drr-glossary", "/knowledge-base", "/upload-your", "/sendai-framework/", "/publication/", "/news/", "/event", "community-voices/", "/blog-type/", "/news-type/", "/community/", "/collections/", "/blog/", "/vacancy/"],
+          includedKeywords: ["www.preventionweb.net/understanding-disaster-risk/terminology/hips/*"],
         },
         {
           "error": (error) => {

@@ -6,6 +6,10 @@
 
 It is currently limited to only UNDRR.org and will take a long time to run
 
+### Fork repo
+
+Note we install from https://github.com/khawkins98/broken-link-checker (https://github.com/khawkins98/broken-link-checker/archive/refs/tags/v0.0.1.tar.gz) to allow setting for the header. This is needed until https://github.com/stevenvachon/broken-link-checker/pull/263 is merged. We use the .tar.gz file as github is funny when dealing with fork repos.
+
 ## Usage
 
 ### Installation
@@ -19,6 +23,14 @@ npm install
 ### Configuration
 
 To prevent 429 throttling issues, it's recommended to set your username and password in the `index.js` file.
+
+```js
+const siteChecker  = new SiteChecker (
+  {
+    customHeaders: { "your-header": "secret" },
+```
+
+You can also pass a user/pass header.
 
 ```javascript
 // index.js
