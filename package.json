@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "replays": "node replays.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,7 @@
   "homepage": "https://github.com/unisdr/link-checker#readme",
   "dependencies": {
     "broken-link-checker": "https://github.com/khawkins98/broken-link-checker/archive/refs/tags/v0.0.2.tar.gz",
-    "colors": "^1.4.0"
+    "colors": "^1.4.0",
+    "extract-urls": "^1.4.0"
   }
 }
