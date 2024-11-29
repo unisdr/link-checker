@@ -5,7 +5,7 @@ const colors = require('colors');
 colors.enable();
 
 // Get the current date
-const currentDate = new Date();
+let currentDate = new Date();
 
 // Format the date as YYYY-MM-DD
 const formattedDate = currentDate.toLocaleString('en-GB', {
@@ -18,11 +18,12 @@ console.log(`Output is also saved to ./logs/link-checker-timestamp.csv`);
 console.log(`----`);
 
 var log_file = fs.createWriteStream(__dirname + '/logs/link-checker-' + formattedDate + '.csv', { flags: 'w' });
+var log_files_checked = fs.createWriteStream(__dirname + '/logs/link-checker-checked-' + formattedDate + '.csv', { flags: 'w' });
 var log_stdout = process.stdout;
 
-console.csv = function(d) { //
-  log_file.write(util.format(d) + '\n');
-  log_stdout.write(util.format(d) + '\n');
+console.csv = function(d,target) { //
+  target.write(util.format(d) + '\n');
+  // log_stdout.write(util.format(d) + '\n');
 };
 
 const options = {
@@ -30,11 +31,12 @@ const options = {
   auth: {
     // user: 'your_username',
     // pass: 'your_password',
+    user: 'your_username',
+    pass: 'your_password',
   },
   // not https prefix!
   url: [
-    "www.undrr.org/implementing-sendai-framework/catalyze-investment-in-resilience",
-    "www.preventionweb.net/understanding-disaster-risk"
+    "www.preventionweb.net/knowledge-base/type-content/documents-publications"
   ]
   // Additional configurations...
 };
@@ -42,15 +44,21 @@ const options = {
 
 // add a header to the csv
 let csvHeader = "Tested URL, Page, Status message, Status code,";
-console.csv(csvHeader);
+console.csv(csvHeader,log_file);
+console.csv("Page",log_files_checked);
 
 // var { HtmlUrlChecker } = require("broken-link-checker");
 var brokenUrlList = [];
 
 // Use the options object to set authentication in the defaultBaseUrlList
 const defaultBaseUrlList = options.url.map(url => `https://${url}`);
-console.log(defaultBaseUrlList)
 // const defaultBaseUrlList = options.url.map(url => `https://${options.auth.user}:${options.auth.pass}@${url}`);
+
+function printProgress(progress){
+  process.stdout.clearLine(0);
+  process.stdout.cursorTo(0);
+  process.stdout.write(progress);
+}
 
 async function main() {
   async function urlChecker(url) {
@@ -62,21 +70,35 @@ async function main() {
           excludeInternalLinks: false,
           excludeExternalLinks: false,
           // excludedKeywords: ['*linkedin*'],
+          // retryHeadFail: false,
           filterLevel: 0, // links only
-          maxSocketsPerHost: 20,
-          cacheMaxAge: 1,
-          customHeaders: { "your-header": "secret" },
+          maxSocketsPerHost: 100,
+          maxSockets: 50,
+          excludeInternalLinks: true,
+          cacheMaxAge: 60000,
+          // cacheResponses: false,
+          responseTimeout: 2000,
+          customHeaders: { "undrr-dev-tester": "4J6Y8B2D9F6Q" },
           acceptedSchemes: ["http", "https"],
-          // requestMethod: "get",
+          requestMethod: "get",
           retryHeadCodes: [405,503],
+          excludedKeywords: ["*www.twitter.com*", "*forms.office.com*"],
           // excludedKeywords: ["understanding-disaster-risk", "/community/", "/drr-glossary", "/knowledge-base", "/upload-your", "/sendai-framework/", "/publication/", "/news/", "/event", "community-voices/", "/blog-type/", "/news-type/", "/community/", "/collections/", "/blog/", "/vacancy/"],
-          includedKeywords: ["www.preventionweb.net/understanding-disaster-risk/terminology/hips/*"],
+          includedKeywords: ["www.preventionweb.net/knowledge-base/type-content/documents-publications/*"],
         },
         {
           "error": (error) => {
             console.error(error);
           },
+          "queue": () => {
+            console.log("queue")
+          },
+          "page": (error, pageURL, customData) => {
+            printProgress(colors.green.bgWhite(`Testing page: ${pageURL}`));
+            console.csv(pageURL,log_files_checked);
+          },
           "link": (result) => {
+            printProgress(colors.green.bgWhite(`Queue: on ${result.base.original} links ${siteChecker.numActiveLinks()} queued ${siteChecker.numQueuedLinks()} Pages ${siteChecker.numPages()}`));
             try {
               if (result.http.response == null) {
                 result.http.response = {};
@@ -88,7 +110,7 @@ async function main() {
 
               if (result.broken) {
                 if (result.http.response && ![undefined, 400, 429, 999, 200, "ERRNO_EPROTO"].includes(result.http.response.statusCode)) {
-                  console.log("broken".red, link);
+                  // printProgress("broken".red, link);
                   
                   var urlCrawlResult = new Object();
                   urlCrawlResult.status = result.http.response.statusCode;
@@ -99,10 +121,11 @@ async function main() {
                   brokenUrlList.push(urlCrawlResult);
 
                   let message = urlCrawlResult.url + ", " + urlCrawlResult.htmlBaseUrl + ", " + urlCrawlResult.statusMessage + ", "+ urlCrawlResult.status + ", ";
-                  console.csv(message);
+                  console.csv(message,log_file);
                 }
               } else {
-                console.log("checked".green, link);
+                let currentDate = new Date();
+                // printProgress("checked link: ".green, currentDate.getMinutes(), currentDate.getSeconds(), link);
               }
             } catch (error) {
               console.log(result)
@@ -120,8 +143,8 @@ async function main() {
       );
 
       try {
+        // url = new URL(url);
         siteChecker.enqueue(url);
-
       } catch (error) {
         console.log(error)
       }
